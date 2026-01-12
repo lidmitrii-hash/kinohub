@@ -21,9 +21,6 @@ export default defineConfig({
 
   ],
   base: '/kinohub/',
-  build: {
-    outDir: 'docs' 
-  },
   resolve: {
     alias: {
 
