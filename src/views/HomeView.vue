@@ -4,16 +4,16 @@
     <div>
 
 
-      <div class="flex items-center w-full">
+      <div class="flex items-center w-full max-w-4xl mx-auto mt-5 px-4">
         <input
-          @input="onChangeSearchInput"
-          class="bg-white border border-gray-400 rounded-full ml-2 mt-3 pl-180 pr-127 outline-none focus:border-gray-400 text-black"
+          @input="search"
+          class="flex-1 bg-white text-black w-full border border-gray-400 rounded-full px-4 py-1 outline-none focus:ring-2 focus:ring-blue-500"
           type="text"
           v-model="query"
           placeholder="Поиск фильмов..."
         />
         <button
-          class="px-4 py-1 mt-3 rounded-full bg-gray-400 text-white hover:bg-gray-500 cursor-pointer"
+          class="px-6 py-2 rounded-full bg-gray-500 text-white hover:bg-gray-600 transition cursor-pointer"
           @click="search"
         >Поиск</button>
       </div>
@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from 'vue-router';
 import AppHeader from "../components/icons/AppHeader.vue";
 
@@ -69,19 +69,33 @@ const query = ref("");
 const currentPage = ref(1);
 const totalPages = ref(1);
 const router = useRouter();
-
+const isSearching = ref(false);
 const goToMovie = (id) => {
   if (!id) return;  // защита на случай пустого id
   router.push(`/movie/${id}`);
 };
 
-const filters = reactive({
-  searchQuery: ''
-});
 
-const onChangeSearchInput = (event) => {
-  filters.searchQuery = event.target.value;
-};
+
+
+
+async function search() {
+  if (!query.value.trim()) return;
+
+  isSearching.value = true;
+
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/search/movie?query=${query.value}&language=ru-RU&page=1`,
+      options
+    );
+    const data = await res.json();
+    movies.value = data.results;
+    currentPage.value = 1;
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 const API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0YzE2ZGZmNDdkOWY3ZmIyZDJjZTU1ZDJiMjJhOTNlYiIsIm5iZiI6MTc1NTM2NjQ0Ny4xNTUsInN1YiI6IjY4YTBjNDJmM2MzOTdlMWU2YmVkMTNjMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.FLX1B8e96ECtZGNFoFnT3Eypenr1pr6iu_6o4aHfnzg";
 const options = {
@@ -122,7 +136,12 @@ function prevPage() {
 onMounted(() => {
   fetchMovies();
 });
-
+onMounted(async () => {
+  query.value = '';
+  isSearching.value = false;
+  await fetchGenres();
+  await fetchMovies();
+});
 
 async function fetchGenres() {
   try {
@@ -137,26 +156,13 @@ async function fetchGenres() {
 }
 
 
-async function search() {
-  if (!query.value) return;
-  try {
-    const res = await fetch(`https://api.themoviedb.org/3/search/movie?query=${query.value}&language=ru-RU&page=1`, options);
-    const data = await res.json();
-    movies.value = data.results;
-  } catch (err) {
-    console.error(err);
-  }
-}
 
 
 function getGenres(ids) {
   return ids.map(id => GENRES.value[id]).join(", ");
 }
 
-onMounted(async () => {
-  await fetchGenres();
-  await fetchMovies();
-});
+
 </script>
 
 

@@ -43,14 +43,15 @@ const fetchGenres = async () => {
   }
 };
 
-const fetchSimilarMovies = async (id) => {
-  try {
-    const res = await api.get(`/movie/${id}/similar`);
-    similarMovies.value = res.data.results;
-  } catch (e) {
-    console.error('Ошибка загрузки похожих фильмов', e);
+async function fetchSimilarMovies(id) {
+  let res = await api.get(`/movie/${id}/similar?language=ru-RU`);
+
+  if (res.data.results.length === 0) {
+    res = await api.get(`/movie/${id}/similar?language=en-US`);
   }
-};
+
+  similarMovies.value = res.data.results;
+}
 
 const nextSlide = () => {
   if (sliderIndex.value + VISIBLE_COUNT < similarMovies.value.length) {
@@ -120,20 +121,20 @@ watch(
 
   <div
     v-if="movie"
-    class="movie-page bg-radial-[at_25%_25%] from-blue to-zinc-900 to-75% w-3/5 m-auto min-h-screen mt-6 h-full"
+    class="movie-page bg-radial-[at_25%_25%] from-blue to-zinc-900 to-75% max-w-6xl mx-auto px-4 min-h-screen mt-6"
   >
-      <div class="flex gap-8 items-start">
+      <div class="flex flex-col md:flex-row gap-8">
     <img
       v-if="movie.poster_path"
       :src="posterUrl"
-      class="w-64 h-96 rounded-lg pt-3 pl-3"
+      class="w-full max-w-xs mx-auto md:mx-0 rounded-lg"
       alt="poster"
     />
 
 
 
     <div class="text-wrap movie-details mt-4 space-y-2">
-    <h1 class="text-2xl font-bold mr-85 truncate max-w-[600px]">{{ movie.title }}</h1>
+    <h1 class="text-2xl font-bold break-words leading-snug">{{ movie.title }}</h1>
       <p><strong>Дата релиза:</strong> {{ movie.release_date }}</p>
 
       <p><strong>Страна:</strong>
@@ -156,20 +157,21 @@ watch(
         {{ movie.runtime }} мин.
       </p>
 
-      <p class="mt-16 max-w-[600px] break-words leading-relaxed"><strong>Описание:</strong>
+      <p class="break-words leading-relaxed max-w-prose"><strong>Описание:</strong>
         {{ movie.overview || '—' }}</p>
     </div>
     </div>
     <!-- Похожие фильмы -->
-<div v-if="similarMovies.length" class="mt-12 ml-9">
+<div v-if="similarMovies.length" class="mt-12 ml-5">
   <h2 class="text-2xl font-bold mb-4">Похожие фильмы</h2>
 
-  <div class="relative flex items-center">
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 relative">
+
     <!-- Левая стрелка -->
     <button
       @click="prevSlide"
       :disabled="sliderIndex === 0"
-      class="absolute -left-9 z-10 bg-black/70 hover:bg-black rounded-full p-3 cursor-pointer"
+      class="absolute -left-6 top-1/2 -translate-y-1/2 cursor-pointer"
     >
       ◀
     </button>
@@ -178,7 +180,7 @@ watch(
     <div
   v-for="movie in visibleMovies"
   :key="movie.id"
-  class="relative w-40 m-1 shrink-0 cursor-pointer"
+  class="relative w-45 m-1 shrink-0 cursor-pointer"
   @mouseenter="hoveredMovieId = movie.id"
   @mouseleave="hoveredMovieId = null"
   @click="router.push(`/movie/${movie.id}`)"
@@ -206,11 +208,14 @@ watch(
     <button
       @click="nextSlide"
       :disabled="sliderIndex + VISIBLE_COUNT >= similarMovies.length"
-      class="absolute right-0 z-10 bg-black/70 hover:bg-black p-3 rounded-full cursor-pointer"
+      class="absolute -right-1 top-1/2 -translate-y-1/2 cursor-pointer"
     >
       ▶
     </button>
   </div>
+</div>
+<div v-if="similarMovies.length === 0" class="text-gray-400 mt-6">
+  Похожие фильмы не найдены
 </div>
   </div>
 
