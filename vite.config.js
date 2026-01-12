@@ -20,7 +20,7 @@ export default defineConfig({
     tailwindcss(),
 
   ],
-  base: './kinohub',
+  base: '/kinohub/',
   resolve: {
     alias: {
 
