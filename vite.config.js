@@ -20,7 +20,10 @@ export default defineConfig({
     tailwindcss(),
 
   ],
-  base: './kinohub',
+  base: '/kinohub/',
+  build: {
+    outDir: 'docs' 
+  },
   resolve: {
     alias: {
 
