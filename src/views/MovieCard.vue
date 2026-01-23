@@ -171,9 +171,9 @@ watch(
     <button
       @click="prevSlide"
       :disabled="sliderIndex === 0"
-      class="absolute -left-6 top-1/2 -translate-y-1/2 cursor-pointer"
+      class="absolute -left-6 top-1/2 -translate-y-1/2 cursor-pointer bg-gradient-to-l from-blue-500 to-purple-500 text-white text-3xl hover:opacity-90 shadow-lg text-2xl"
     >
-      ◀
+     ◀
     </button>
 
     <!-- Слайдер -->
@@ -208,9 +208,9 @@ watch(
     <button
       @click="nextSlide"
       :disabled="sliderIndex + VISIBLE_COUNT >= similarMovies.length"
-      class="absolute -right-1 top-1/2 -translate-y-1/2 cursor-pointer"
+      class="absolute -right-1 top-1/2 -translate-y-1/2 cursor-pointer bg-gradient-to-l from-blue-500 to-purple-500 text-white text-3xl hover:opacity-90 shadow-lg text-2xl"
     >
-      ▶
+     ▶
     </button>
   </div>
 </div>
