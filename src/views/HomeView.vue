@@ -6,7 +6,7 @@
 
       <div class="flex items-center w-full max-w-4xl mx-auto mt-5 px-4">
         <input
-          @input="search"
+
           class="flex-1 bg-white text-black w-full border border-gray-400 rounded-full px-4 py-1 outline-none focus:ring-2 focus:ring-blue-500"
           type="text"
           v-model="query"
@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from 'vue-router';
 import AppHeader from "../components/icons/AppHeader.vue";
 
@@ -136,13 +136,21 @@ function prevPage() {
 onMounted(() => {
   fetchMovies();
 });
+
 onMounted(async () => {
   query.value = '';
   isSearching.value = false;
   await fetchGenres();
   await fetchMovies();
 });
+watch(query, async (newValue) => {
+  if (!newValue.trim()) {
 
+    isSearching.value = false;
+    currentPage.value = 1;
+    await fetchMovies(1);
+  }
+});
 async function fetchGenres() {
   try {
     const res = await fetch("https://api.themoviedb.org/3/genre/movie/list?language=ru-RU", options);

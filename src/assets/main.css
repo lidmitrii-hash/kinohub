@@ -29,9 +29,13 @@ h1 {
 }
 .movies {
   display: grid;
+  padding-left: 10px;
+  padding-right: 10px;
   grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
+  gap: 16px;
   margin-top: 20px;
+
+
 }
 .movie-card {
   position: relative;
@@ -41,6 +45,7 @@ h1 {
   text-align: center;
   overflow: hidden;
   transition: transform 0.2s;
+
 }
 .movie-card:hover {
   transform: scale(1.05);
@@ -49,10 +54,14 @@ h1 {
 .movie img {
   width: 100%;
   border-radius: 10px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+
 }
 .title {
   margin-top: 10px;
   font-size: 16px;
+
 }
 .date {
   font-size: 14px;
@@ -91,4 +100,46 @@ h1 {
 .pagination button:disabled {
   background: #555;
   cursor: not-allowed;
+}
+
+
+@media (max-width: 431px) {
+body {
+  width: 100%;
+}
+.movies {
+  grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 10px;
+}
+.movie-card {
+  width: 100%;
+}
+header{
+  height: 56px;
+}
+.appheader {
+  font-size: 30px;
+  left: 143px;
+}
+
+}
+
+
+@media (min-width: 640px) {
+  .movies {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .movies {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .movies {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }

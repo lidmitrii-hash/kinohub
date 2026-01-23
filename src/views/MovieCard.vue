@@ -9,8 +9,6 @@ const router = useRouter();
 const movie = ref(null);
 const error = ref(false);
 const similarMovies = ref([]);
-const sliderIndex = ref(0);
-const VISIBLE_COUNT = 5;
 const hoveredMovieId = ref(null);
 const GENRES = ref({});
 
@@ -53,25 +51,16 @@ async function fetchSimilarMovies(id) {
   similarMovies.value = res.data.results;
 }
 
-const nextSlide = () => {
-  if (sliderIndex.value + VISIBLE_COUNT < similarMovies.value.length) {
-    sliderIndex.value++;
-  }
-};
 
-const prevSlide = () => {
-  if (sliderIndex.value > 0) {
-    sliderIndex.value--;
-  }
-};
+const sliderContainer = ref(null);
 
-const visibleMovies = computed(() =>
-  similarMovies.value.slice(
-    sliderIndex.value,
-    sliderIndex.value + VISIBLE_COUNT
-  )
-);
+function scrollLeft() {
+  sliderContainer.value.scrollBy({ left: -sliderContainer.value.offsetWidth / 2, behavior: 'smooth' });
+}
 
+function scrollRight() {
+  sliderContainer.value.scrollBy({ left: sliderContainer.value.offsetWidth / 2, behavior: 'smooth' });
+}
 const posterUrl = computed(() =>
   movie.value?.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.value.poster_path}`
@@ -121,9 +110,9 @@ watch(
 
   <div
     v-if="movie"
-    class="movie-page bg-radial-[at_25%_25%] from-blue to-zinc-900 to-75% max-w-6xl mx-auto px-4 min-h-screen mt-6"
+    class="movie-page flex flex-col  bg-radial-[at_25%_25%] from-blue to-zinc-900 to-75% max-w-6xl mx-auto px-4 min-h-screen mt-6"
   >
-      <div class="flex flex-col md:flex-row gap-8">
+      <div class="flex flex-row md:flex-row gap-8 items-start">
     <img
       v-if="movie.poster_path"
       :src="posterUrl"
@@ -133,7 +122,7 @@ watch(
 
 
 
-    <div class="text-wrap movie-details mt-4 space-y-2">
+    <div class="movie-details mt-4 space-y-2">
     <h1 class="text-2xl font-bold break-words leading-snug">{{ movie.title }}</h1>
       <p><strong>Дата релиза:</strong> {{ movie.release_date }}</p>
 
@@ -162,62 +151,101 @@ watch(
     </div>
     </div>
     <!-- Похожие фильмы -->
-<div v-if="similarMovies.length" class="mt-12 ml-5">
+     <div v-if="similarMovies.length" class="mt-12">
   <h2 class="text-2xl font-bold mb-4">Похожие фильмы</h2>
-
-  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 relative">
-
-    <!-- Левая стрелка -->
-    <button
-      @click="prevSlide"
-      :disabled="sliderIndex === 0"
-      class="absolute -left-6 top-1/2 -translate-y-1/2 cursor-pointer bg-gradient-to-l from-blue-500 to-purple-500 text-white text-3xl hover:opacity-90 shadow-lg text-2xl"
-    >
-     ◀
-    </button>
-
-    <!-- Слайдер -->
-    <div
-  v-for="movie in visibleMovies"
-  :key="movie.id"
-  class="relative w-45 m-1 shrink-0 cursor-pointer"
-  @mouseenter="hoveredMovieId = movie.id"
-  @mouseleave="hoveredMovieId = null"
-  @click="router.push(`/movie/${movie.id}`)"
->
-  <img
-    :src="movie.poster_path
-      ? 'https://image.tmdb.org/t/p/w300' + movie.poster_path
-      : 'https://via.placeholder.com/300x450?text=No+Image'"
-    class="rounded-lg"
-  />
-
-  <!-- Hover info -->
-  <div
-    v-if="hoveredMovieId === movie.id"
-    class="absolute inset-0 bg-black/80 text-white p-2 text-xs flex flex-col justify-end rounded-lg"
+   <div class="relative">
+  <!-- Левая стрелка -->
+  <button
+    @click="scrollLeft"
+    class="absolute left-0 top-1/2 -translate-y-1/2 z-10 cursor-pointer bg-gradient-to-l from-blue-500 to-purple-500 text-white text-3xl hover:opacity-90 shadow-lg text-2xl"
   >
-    <p class="font-bold">{{ movie.title }}</p>
-    <p>⭐ {{ movie.vote_average }}</p>
-    <p>{{ getGenres(movie.genre_ids) }}</p>
-    <p>{{ movie.release_date }}</p>
+    ◀
+  </button>
+
+  <!-- Слайдер -->
+  <div
+    ref="sliderContainer"
+    class="flex overflow-x-auto gap-4 snap-x snap-mandatory scrollbar-hide scroll-smooth"
+  >
+    <div
+      v-for="movie in similarMovies"
+      :key="movie.id"
+      class="flex-shrink-0 w-44 snap-start cursor-pointer relative"
+      @mouseenter="hoveredMovieId = movie.id"
+      @mouseleave="hoveredMovieId = null"
+      @click="router.push(`/movie/${movie.id}`)"
+    >
+      <img
+        :src="movie.poster_path
+          ? 'https://image.tmdb.org/t/p/w300' + movie.poster_path
+          : 'https://via.placeholder.com/300x450?text=No+Image'"
+        class="rounded-lg w-full h-auto"
+      />
+      <div
+        v-if="hoveredMovieId === movie.id"
+        class="absolute inset-0 bg-black/80 text-white p-2 text-xs flex flex-col justify-end rounded-lg"
+      >
+        <p class="font-bold truncate">{{ movie.title }}</p>
+        <p>⭐️ {{ movie.vote_average }}</p>
+        <p>{{ getGenres(movie.genre_ids) }}</p>
+        <p>{{ movie.release_date }}</p>
+      </div>
+    </div>
   </div>
+
+  <!-- Правая стрелка -->
+  <button
+    @click="scrollRight"
+    class="absolute right-0 top-1/2 -translate-y-1/2 z-10 cursor-pointer bg-gradient-to-l from-blue-500 to-purple-500 text-white text-3xl hover:opacity-90 shadow-lg text-2xl"
+  >
+     ▶
+  </button>
+</div>
 </div>
 
-    <!-- Правая стрелка -->
-    <button
-      @click="nextSlide"
-      :disabled="sliderIndex + VISIBLE_COUNT >= similarMovies.length"
-      class="absolute -right-1 top-1/2 -translate-y-1/2 cursor-pointer bg-gradient-to-l from-blue-500 to-purple-500 text-white text-3xl hover:opacity-90 shadow-lg text-2xl"
-    >
-     ▶
-    </button>
   </div>
-</div>
+
 <div v-if="similarMovies.length === 0" class="text-gray-400 mt-6">
   Похожие фильмы не найдены
 </div>
-  </div>
+
 
 
 </template>
+
+<style>
+  @media (max-width: 431px) {
+h1 {
+    font-size: 20px;
+    padding-left: 0;
+    margin-top: 0;
+}
+h2 {
+  font-size: 18px;
+}
+p {
+  font-size: 12px;
+
+}
+
+.movie-page {
+  padding: 12px;
+  gap: 10px;
+  display: flex;
+
+}
+
+.movie-page img {
+  width: 170px;
+  height: 250px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  margin-top: 18px;
+  margin-left: 18px ;
+}
+.movie-similar {
+  grid-template-columns: repeat(2, 1fr);
+}
+  }
+</style>
+
